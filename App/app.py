@@ -1,23 +1,24 @@
+import shutil
+
 from flask import Flask, escape, request, jsonify
 import csv
+from tempfile import NamedTemporaryFile
 
 app = Flask(__name__)
 
 OBJECTFIELDSNAMES = ["id", "text"]
-"""
-check if a given object exist in given csv file
+OBJECTCSV = "o.csv"
+TEMPCSV = "temp.csv"
 
-
-
-def checkifExistObjet(mycsv, object):
+def checkifExistObjet(mycsv, object, fields):
     with open(mycsv, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
+        reader = csv.DictReader(csvfile, fieldnames=fields)
         for row in reader:
             if row['id'] == object['id']:
                 print(row['id'], object['id'])
                 return False
         return True
-"""
+
 
 def addObject(mycsv, object):
     print(object['id'])
@@ -25,6 +26,8 @@ def addObject(mycsv, object):
         fieldnames = ['id', 'text']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writerow({"id" : object['id'], "text" : object['text']})
+
+
 
 def getAll(mycsv, fdlsN):
     o = []
@@ -34,6 +37,35 @@ def getAll(mycsv, fdlsN):
         for row in reader:
             o.append(row)
         return o
+
+def updateObject(mycsv, object, fieldsnames):
+    tempfile = NamedTemporaryFile(mode='w', delete=False)
+    fields = fieldsnames
+
+    with open(mycsv, 'r') as csvfile, tempfile:
+        reader = csv.DictReader(csvfile, fieldnames=fields)
+        writer = csv.DictWriter(tempfile, fieldnames=fields)
+        for row in reader:
+            print(row)
+            if row['id'] == str(object['id']):
+                print('updating row', row['id'])
+                row['text'] = object['text']
+                o = row
+            row = {'id': row['id'], 'text': row['text']}
+            writer.writerow(row)
+    shutil.move(tempfile.name, mycsv)
+    return True
+
+    """with open(mycsv, 'r', newline='') as csvfile, tempfile:
+
+        reader = csv.DictReader(csvfile, fieldnames=fields)
+        writer = csv.DictWriter(tempfile, fieldnames=fields)
+        for row in reader:
+            if row['id'] == object['id']:
+                row['text'] = object['text']
+            row = {"id" : object['id'], "text" : object['text']}
+            writer.writerow(row)
+    shutil.move(tempfile.name, mycsv)"""
 
 def getMax(mycsv):
 
@@ -62,9 +94,9 @@ def postObjet():
             return jsonify("invalid Json, too much parameters")
         else:
             if 'text' in content:
-                max = getMax("o.csv") + 1
+                max = getMax(OBJECTCSV) + 1
                 content['id'] = max
-                addObject("o.csv", content)
+                addObject(OBJECTCSV, content)
                 return jsonify(content)
             else:
                 return jsonify("invalid Json, parameter key invalid")
@@ -72,25 +104,50 @@ def postObjet():
     else:
         return jsonify("Invalid Json given")
 
-
+"""
+return all objects
+"""
 @app.route('/objetAll', methods=['GET'])
 def getAllObjet():
     return jsonify(getAll('o.csv', OBJECTFIELDSNAMES))
 
-
+"""
+get method for objects
+:parameter =  id
+return an object with the id given or error
+"""
 @app.route('/objet/<id>', methods=['GET'])
 def getObjet(id):
     if id:
         content = {'id' : id}
         if content['id']:
-            if getAny("o.csv", content) == False:
+            if getAny(OBJECTCSV, content) == False:
                 return jsonify("Object not found")
             else:
-                return jsonify(getAny("o.csv", content))
+                return jsonify(getAny(OBJECTCSV, content))
         else:
             return jsonify("Object given has no Id")
     else:
         return jsonify("Invalid Id given")
+
+
+@app.route('/objet', methods=['PUT', 'UPDATE'])
+def putObject():
+    if request.is_json:
+        content = request.get_json()
+        if len(content) > 2 :
+            return jsonify("invalid Json, too much parameters")
+        else:
+            if 'text' and 'id' in content:
+                if checkifExistObjet(OBJECTCSV, content, OBJECTFIELDSNAMES):
+                    updateObject(OBJECTCSV, content, OBJECTFIELDSNAMES)
+                    return jsonify("succes, updated object")
+                else:
+                    return jsonify('object doesn\'t exist')
+            else:
+                return jsonify("invalid Json, key parameter invalid")
+    else:
+        return jsonify("Invalid Json given")
 
 
 if __name__ == '__main__':
