@@ -56,16 +56,6 @@ def updateObject(mycsv, object, fieldsnames):
     shutil.move(tempfile.name, mycsv)
     return True
 
-    """with open(mycsv, 'r', newline='') as csvfile, tempfile:
-
-        reader = csv.DictReader(csvfile, fieldnames=fields)
-        writer = csv.DictWriter(tempfile, fieldnames=fields)
-        for row in reader:
-            if row['id'] == object['id']:
-                row['text'] = object['text']
-            row = {"id" : object['id'], "text" : object['text']}
-            writer.writerow(row)
-    shutil.move(tempfile.name, mycsv)"""
 
 def getMax(mycsv):
 
