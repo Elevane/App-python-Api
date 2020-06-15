@@ -9,22 +9,20 @@ app = Flask(__name__)
 RESSOURCEFIELDSNAME = ["id", "name", "quantity", "unity", "user"]
 RESSOURCEFIELDSNAMEPOST = ["name", "quantity", "unity", "user"]
 
+FIELDSNAMES = {'ressource' : RESSOURCEFIELDSNAME,
+                'resourcepost' : RESSOURCEFIELDSNAMEPOST}
+
+
 OBJECTCSV = "ressource.csv"
 TEMPCSV = "temp.csv"
 
 
 @app.route("/clean/<name>")
-def cleanCsv(mycsv):
-    mycsv = mycsv + ".csv"
-    tempfile = NamedTemporaryFile(mode='w', delete=False)
-    with open(mycsv, 'r') as csvfile, tempfile:
-        reader = csv.DictReader(csvfile)
-        writer = csv.DictWriter(tempfile)
-        for row in reader:
-            row = {}
-            writer.writerow(row)
-    shutil.move(tempfile.name, mycsv)
-    return True
+def cleanCsv(name):
+    mycsv = name + ".csv"
+    f = open(mycsv, "w+")
+    f.close()
+    return jsonify("file cleaned")
 
 
 def checkifExistObjet(mycsv, object, fields):
