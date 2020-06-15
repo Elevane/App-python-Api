@@ -1,62 +1,94 @@
 import shutil
 
-from flask import Flask, escape, request, jsonify
+from flask import Flask, request, jsonify, make_response
 import csv
 from tempfile import NamedTemporaryFile
+
 
 app = Flask(__name__)
 
 RESSOURCEFIELDSNAME = ["id", "name", "quantity", "unity", "user"]
 RESSOURCEFIELDSNAMEPOST = ["name", "quantity", "unity", "user"]
+USERFIELDSNAME = ["id", "name", "login", "password"]
+USERFIELDSNAMEPOST = ["name", "login", "password"]
 
-FIELDSNAMES = {'ressource' : RESSOURCEFIELDSNAME,
-                'resourcepost' : RESSOURCEFIELDSNAMEPOST}
+FIELDSNAMES = {'ressource': RESSOURCEFIELDSNAME,
+               'resourcepost': RESSOURCEFIELDSNAMEPOST}
+
+RESSOURCECSV = "ressource.csv"
+USERCSV = "user.csv"
 
 
-OBJECTCSV = "ressource.csv"
-TEMPCSV = "temp.csv"
+"""
+clear a csv file 
+name = csv filename 
+"""
 
 
 @app.route("/clean/<name>")
-def cleanCsv(name):
+def cleancsv(name):
     mycsv = name + ".csv"
     f = open(mycsv, "w+")
     f.close()
     return jsonify("file cleaned")
 
+"""
+mycsv = csv filename 
+ob = object to get 
+fieldsnames = names of the given object' fields
+"""
 
-def checkifExistObjet(mycsv, object, fields):
+
+def checkifexistobject(mycsv, ob, fields):
     with open(mycsv, newline='') as csvfile:
         reader = csv.DictReader(csvfile, fieldnames=fields)
         for row in reader:
-            if row['id'] == object['id']:
+            if row['id'] == ob['id']:
                 return True
         return False
 
+"""
+Add an object to the csv file
+mycsv = csv filename 
+ob = object to get 
+fieldsnames = names of the given object' fields
+"""
 
-def addObject(mycsv, object, fields):
 
+def addobject(mycsv, ob, fields):
     with open(mycsv, 'a', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fields)
-        writer.writerow({"id": object['id'],
-                         "name": object['name'],
-                         "quantity": object['quantity'],
-                         "unity": object['unity'],
-                         "user": object['user'],
-                         })
+        o = {}
+        for f in fields:
+            o[f] = ob[f]
+        writer.writerow(o)
+
+"""
+give a list of all object in the csv file
+mycsv = csv filename 
+ob = object to get 
+fieldsnames = names of the given object' fields
+"""
 
 
-def getAll(mycsv, fdlsN):
+def getall(mycsv, fieldnames):
     o = []
     with open(mycsv, newline='') as csvfile:
-        fieldnames = fdlsN
         reader = csv.DictReader(csvfile, fieldnames=fieldnames)
         for row in reader:
             o.append(row)
         return o
 
 
-def updateObject(mycsv, object, fieldsnames):
+"""
+update an row inside a given csv file
+mycsv = csv filename 
+ob = object to get 
+fieldsnames = names of the given object' fields
+"""
+
+
+def updateobject(mycsv, ob, fieldsnames):
     tempfile = NamedTemporaryFile(mode='w', delete=False)
     fields = fieldsnames
 
@@ -64,41 +96,63 @@ def updateObject(mycsv, object, fieldsnames):
         reader = csv.DictReader(csvfile, fieldnames=fields)
         writer = csv.DictWriter(tempfile, fieldnames=fields)
         for row in reader:
-            if row['id'] == str(object['id']):
+            if row['id'] == str(ob['id']):
                 for f in fieldsnames:
-                    row[f] = object[f]
+                    row[f] = ob[f]
                 o = row
                 i = 0
                 for r in o:
-                    print(o)
-                    row[fieldsnames[i]] =  o[fieldsnames[i]]
+                    row[fieldsnames[i]] = o[fieldsnames[i]]
                     i = i + 1
-            """row = {"id": row['id'],
-                         "name": row['name'],
-                         "quantity": row['quantity'],
-                         "unity": row['unity'],
-                         "user": row['user'],
-                         }"""
             writer.writerow(row)
     shutil.move(tempfile.name, mycsv)
     return True
 
+"""
+get the highest id inside a csv file'list to prevent doubles
+mycsv = csv filename 
+fieldsnames = names of the given object' fields
+"""
 
-def getMax(mycsv):
+
+def getmax(mycsv, fieldnames):
     with open(mycsv, newline='') as csvfile:
-        row_count = sum(1 for row in csvfile)
-        return row_count
-
-
-def getAny(mycsv, objet, fields):
-    with open(mycsv, newline='') as csvfile:
-        reader = csv.DictReader(csvfile, fieldnames=fields)
+        reader = csv.DictReader(csvfile, fieldnames=fieldnames)
+        o = []
         for row in reader:
-            if row["id"] == objet['id']:
+            o.append(row)
+        try:
+            return int(o[-1].get('id'))
+        except IndexError:
+            return 0
+
+"""
+get a row from a given "id" inside teh csv file
+mycsv = csv filename 
+ob = object to get 
+fieldsnames = names of the given object' fields
+"""
+
+
+def getany(mycsv, ob, fieldsnames):
+    with open(mycsv, newline='') as csvfile:
+        reader = csv.DictReader(csvfile, fieldnames=fieldsnames)
+        for row in reader:
+            if row["id"] == ob['id']:
                 response = row
                 return response
         return False
 
+
+""""
+             _____    _____   _____   _____   _____   _   _   _____    _____   _____  
+            |  _  \  | ____| /  ___/ /  ___/ /  _  \ | | | | |  _  \  /  ___| | ____| 
+            | |_| |  | |__   | |___  | |___  | | | | | | | | | |_| |  | |     | |__   
+            |  _  /  |  __|  \___  \ \___  \ | | | | | | | | |  _  /  | |     |  __|  
+            | | \ \  | |___   ___| |  ___| | | |_| | | |_| | | | \ \  | |___  | |___  
+            |_|  \_\ |_____| /_____/ /_____/ \_____/ \_____/ |_|  \_\ \_____| |_____| 
+
+"""
 
 """
 post method for objects
@@ -107,16 +161,16 @@ post method for objects
 
 
 @app.route('/ressource', methods=['POST'])
-def postResource():
+def postresource():
     if request.is_json:
         content = request.get_json()
         if len(content) > 4:
             return jsonify("invalid Json, too much parameters")
         else:
             if 'name' and "quantity" and "unity" and "user" in content:
-                max = getMax(OBJECTCSV) + 1
-                content['id'] = max
-                addObject(OBJECTCSV, content, RESSOURCEFIELDSNAME)
+                maxi = getmax(RESSOURCECSV, RESSOURCEFIELDSNAME) + 1
+                content['id'] = maxi
+                addobject(RESSOURCECSV, content, RESSOURCEFIELDSNAME)
                 return jsonify(content)
             else:
                 missing = []
@@ -132,13 +186,13 @@ def postResource():
 
 
 """
-return all objects
+return all ressources
 """
 
 
 @app.route('/ressourceAll', methods=['GET'])
-def getAllRessource():
-    return jsonify(getAll('ressource.csv', RESSOURCEFIELDSNAME))
+def getallressource():
+    return jsonify(getall('ressource.csv', RESSOURCEFIELDSNAME))
 
 
 """
@@ -149,22 +203,27 @@ return a ressource with the id given or error
 
 
 @app.route('/ressource/<id>', methods=['GET'])
-def getRessource(id):
+def getressource(id):
     if id:
         content = {'id': id}
         if content['id']:
-            if getAny(OBJECTCSV, content, RESSOURCEFIELDSNAME) == False:
+            if not getany(RESSOURCECSV, content, RESSOURCEFIELDSNAME):
                 return jsonify("Ressource not found")
             else:
-                return jsonify(getAny(OBJECTCSV, content))
+                return jsonify(getany(RESSOURCECSV, content, RESSOURCEFIELDSNAME))
         else:
             return jsonify("ressource given has no Id")
     else:
         return jsonify("Invalid Id given")
 
+""""
+put method for ressources
+update the ressource given in the db
+"""
+
 
 @app.route('/objet', methods=['PUT', 'UPDATE'])
-def putObject():
+def putobject():
     if request.is_json:
         content = request.get_json()
         if len(content) > 5:
@@ -172,9 +231,9 @@ def putObject():
         else:
             if 'id' and 'name' and "quantity" and "unity" and "user" in content:
 
-                if checkifExistObjet(OBJECTCSV, content, RESSOURCEFIELDSNAME):
+                if checkifexistobject(RESSOURCECSV, content, RESSOURCEFIELDSNAME):
 
-                    updateObject(OBJECTCSV, content, RESSOURCEFIELDSNAME)
+                    updateobject(RESSOURCECSV, content, RESSOURCEFIELDSNAME)
                     return jsonify("succes, updated object")
                 else:
                     missing = []
@@ -189,6 +248,107 @@ def putObject():
                 return jsonify("invalid Json, key parameter invalid")
     else:
         return jsonify("Invalid Json given")
+
+
+"""
+                    _   _   _____   _____   _____   
+                    | | | | /  ___/ | ____| |  _  \  
+                    | | | | | |___  | |__   | |_| |  
+                    | | | | \___  \ |  __|  |  _  /  
+                    | |_| |  ___| | | |___  | | \ \  
+                    \_____/ /_____/ |_____| |_|  \_\ 
+
+"""
+
+"""
+post method for users
+:parameter =  request with users in json
+"""
+
+
+@app.route('/user', methods=['POST'])
+def postuser():
+    if request.is_json:
+        content = request.get_json()
+        if len(content) > len(USERFIELDSNAMEPOST):
+            return jsonify("invalid Json, too much parameters")
+        else:
+            if "name" and "login" and "password" in content:
+                maxi = getmax(USERCSV, USERFIELDSNAME) + 1
+                content['id'] = maxi
+                addobject(USERCSV, content, USERFIELDSNAME)
+                return jsonify(content)
+            else:
+                missing = []
+                keys = list(content.keys())
+                for re in USERFIELDSNAMEPOST:
+                    if re not in keys:
+                        missing.append(re)
+                return jsonify("invalid Json, parameter key invalid, missing: ", missing)
+                # return le missing parameters
+
+    else:
+        return jsonify("Invalid Json given")
+
+
+""""
+put method for user
+update the user given in the db
+"""
+
+
+@app.route('/user', methods=['PUT', 'UPDATE'])
+def putuser():
+    if request.is_json:
+        content = request.get_json()
+        if len(content) > 5:
+            return jsonify("invalid Json, too much parameters")
+        else:
+            if 'id' and 'name' and "login" and "password" in content:
+
+                if checkifexistobject(USERCSV, content, USERFIELDSNAME):
+                    updateobject(USERCSV, content, USERFIELDSNAME)
+                    return jsonify("succes, updated object")
+                else:
+                    return jsonify("object not in database")
+                    # return le missing parameters
+
+            else:
+                return jsonify("invalid Json, key parameter invalid")
+    else:
+        return jsonify("Invalid Json given")
+
+
+"""
+return all users
+"""
+
+
+@app.route('/userAll', methods=['GET'])
+def getalluser():
+    return jsonify(getall(USERCSV, USERFIELDSNAME))
+
+
+"""
+get method for ressources
+:parameter =  id
+return a ressource with the id given or error
+"""
+
+
+@app.route('/user/<identifier>', methods=['GET'])
+def getuser(identifier):
+    if id:
+        content = {'id': identifier}
+        if content['id']:
+            if not getany(USERCSV, content, USERFIELDSNAME):
+                return jsonify("User not found")
+            else:
+                return jsonify(getany(USERCSV, content, USERFIELDSNAME))
+        else:
+            return jsonify("user given has no Id")
+    else:
+        return jsonify("Invalid Id given")
 
 
 if __name__ == '__main__':
