@@ -1,8 +1,6 @@
 import shutil
-
 from flask import Flask, request, jsonify, make_response
 import csv
-from tempfile import NamedTemporaryFile
 
 
 app = Flask(__name__)
