@@ -1,9 +1,10 @@
 import shutil
 from flask import Flask, request, jsonify, make_response
 import csv
-
+from flask_cors import CORS
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 RESSOURCEFIELDSNAME = ["id", "name", "quantity", "unity", "user"]
 RESSOURCEFIELDSNAMEPOST = ["name", "quantity", "unity", "user"]
