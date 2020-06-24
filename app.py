@@ -2,6 +2,8 @@ import shutil
 from flask import Flask, request, jsonify, make_response
 import csv
 from flask_cors import CORS
+import tempfile
+
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -88,12 +90,12 @@ fieldsnames = names of the given object' fields
 
 
 def updateobject(mycsv, ob, fieldsnames):
-    tempfile = NamedTemporaryFile(mode='w', delete=False)
+    temp = tempfile.NamedTemporaryFile(mode='w', delete=False)
     fields = fieldsnames
 
-    with open(mycsv, 'r') as csvfile, tempfile:
+    with open(mycsv, 'r') as csvfile, temp:
         reader = csv.DictReader(csvfile, fieldnames=fields)
-        writer = csv.DictWriter(tempfile, fieldnames=fields)
+        writer = csv.DictWriter(temp, fieldnames=fields)
         for row in reader:
             if row['id'] == str(ob['id']):
                 for f in fieldsnames:
@@ -104,7 +106,7 @@ def updateobject(mycsv, ob, fieldsnames):
                     row[fieldsnames[i]] = o[fieldsnames[i]]
                     i = i + 1
             writer.writerow(row)
-    shutil.move(tempfile.name, mycsv)
+    shutil.move(temp.name, mycsv)
     return True
 
 """
@@ -141,6 +143,25 @@ def getany(mycsv, ob, fieldsnames):
                 response = row
                 return response
         return False
+
+
+
+"""
+copy the content of the csv given without the row with specific id in temp file the copy then temp file in teh csv file.
+"""
+
+def deleteRes(mycsv, ob, fieldsnames):
+    temp = tempfile.NamedTemporaryFile(mode='w', delete=False)
+    fields = fieldsnames
+
+    with open(mycsv, 'r') as csvfile, temp:
+        reader = csv.DictReader(csvfile, fieldnames=fields)
+        writer = csv.DictWriter(temp, fieldnames=fields)
+        for row in reader:
+            if row['id'] != str(ob['id']):
+                writer.writerow(row)
+    shutil.move(temp.name, mycsv)
+    return True
 
 
 """"
@@ -248,6 +269,29 @@ def putobject():
     else:
         return jsonify("Invalid Json given")
 
+
+
+"""
+delete method of ressource
+:parameter = id of the object to delete
+delete the object in teh csv file according to the id given
+"""
+
+
+@app.route('/object/<id>', methods=['DELETE'])
+def delobjet(id):
+    if id:
+        content = {'id': id}
+        if content['id']:
+            if not getany(RESSOURCECSV, content, RESSOURCEFIELDSNAME):
+                return jsonify("Ressource not found")
+            else:
+                deleteRes(RESSOURCECSV, content, RESSOURCEFIELDSNAME)
+                return jsonify("ressource deleted")
+        else:
+            return jsonify("ressource given has no Id")
+    else:
+        return jsonify("Invalid Id given")
 
 """
                     _   _   _____   _____   _____   
