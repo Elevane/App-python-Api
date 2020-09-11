@@ -14,7 +14,7 @@ colorama==0.4.1
 connexion==2.6.0
 DateTime==4.3
 distlib==0.3.0
-Django==2.2.1
+Django==2.2.13
 dnspython==1.16.0
 eventlet==0.25.2
 falcon==2.0.0
