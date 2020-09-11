@@ -72,3 +72,5 @@ Werkzeug==1.0.1
 wrapt==1.11.2
 zipp==3.1.0
 zope.interface==5.1.0
+
+heroku ps:scale web=1
