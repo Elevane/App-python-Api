@@ -19,23 +19,44 @@ db = SQLAlchemy(app)
 ma = Marchmallow(app)
 
 #Ressource Class/model
+class User(db.Model):
+    __tablename__ = 'user'
+    id = db.Column(db.Integer, primary_key=True)
+    login = db.Column(db.String(50), nullable=False)
+    password = db.Column(db.String(50), nullable=False)
+
+    def __init__(self, login, password):
+        self.login = login
+        self.password = password
+
+
 class Ressource(db.Model):
+    __tablename__ = 'course_ressource'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     quantity = db.Column(db.Integer)
     unity = db.Column(db.String(20))
-    #user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
-    #user = db.relationship("User")
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship("User", back_populates="ressources")
 
-    def __init__(self, name, quantity, unity):#, user):
+
+    def __init__(self, name, quantity, unity, user):
         self.name = name
         self.quantity = quantity
         self.unity = unity
-        #self.user = user
+        self.user = user
+
+
+class UserSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'login', 'password')
+
 
 class RessourceSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'name', 'quantity', 'unity')#,'user')
+        fields = ('id', 'name', 'quantity', 'unity','user')
+
+
 
 
 #init Schema
