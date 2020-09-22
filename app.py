@@ -1,7 +1,7 @@
 import shutil
 from flask import Flask, request, jsonify, make_response
 import csv
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import tempfile
 
 
@@ -182,6 +182,7 @@ post method for objects
 
 @app.route('/ressource', methods=['POST'])
 def postresource():
+    print(request.get_json())
     if request.is_json:
         content = request.get_json()
         if len(content) > 4:
@@ -279,6 +280,7 @@ delete the object in teh csv file according to the id given
 
 
 @app.route('/object/<id>', methods=['DELETE'])
+@cross_origin()
 def delobjet(id):
     if id:
         content = {'id': id}
