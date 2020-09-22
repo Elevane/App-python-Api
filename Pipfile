@@ -13,6 +13,7 @@ marshmallow-sqlalchemy = "*"
 marshmallow = "*"
 sqlalchemy = "*"
 flask-cors = "*"
+pymysql = "*"
 
 [requires]
 python_version = "3.8"
