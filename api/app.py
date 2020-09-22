@@ -1,22 +1,22 @@
 from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy 
 from flask_marshmallow import Marshmallow 
+from flask_cors import CORS, cross_origin
+import os
 
 
-#init app
+
+# Init app
 app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 basedir = os.path.abspath(os.path.dirname(__file__))
-
-# db
-app.config['SQLALCHEMY_DATABASE_URI'] = ''
+# Database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-#init db
+# Init db
 db = SQLAlchemy(app)
-
-#init Marchmallow
-
-ma = Marchmallow(app)
+# Init ma
+ma = Marshmallow(app)
 
 #Ressource Class/model
 class User(db.Model):
@@ -24,6 +24,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String(50), nullable=False)
     password = db.Column(db.String(50), nullable=False)
+    ressource = db.relationship("Ressource")
+
 
     def __init__(self, login, password):
         self.login = login
@@ -37,7 +39,6 @@ class Ressource(db.Model):
     quantity = db.Column(db.Integer)
     unity = db.Column(db.String(20))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship("User", back_populates="ressources")
 
 
     def __init__(self, name, quantity, unity, user):
@@ -56,14 +57,39 @@ class RessourceSchema(ma.Schema):
     class Meta:
         fields = ('id', 'name', 'quantity', 'unity','user')
 
+# POST ressource
+@app.route('/ressource', methods=['POST'])
+def add_ressource():
+    name = request.json['name']
+    quantity = request.json['quantity']
+    unity = request.json['unity']
+    user = request.json['user']
 
+    res = Ressource(name, quantity, unity, user)
+    db.session.add(res)
+    db.session.commit()
+
+    return ressource_schema.jsonify(res)
+
+
+# Get All Ressources
+@app.route('/ressource', methods=['GET'])
+def get_ressources():
+  all_ressources = Ressource.query.all()
+  result = ressources_schema.dump(all_ressources)
+  return jsonify(result)
+
+@app.route('/ressource/<id>', methods=['GET'])
+def get_ressource(id):
+    res = Ressource.query.get(id)
+    return ressource_schema.jsonify(res)
 
 
 #init Schema
 
-ressource_schema = RessourceSchema(strict=True)
-ressources_schema = RessourceSchema(many = True, strict=True)
+ressource_schema = RessourceSchema()
+ressources_schema = RessourceSchema(many = True)
 #run server
 
 if __name__ == '__main__':
-    app.run(debug=true)
+    app.run(debug=True)
