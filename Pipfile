@@ -15,6 +15,7 @@ sqlalchemy = "*"
 flask-cors = "*"
 pymysql = "*"
 gunicorn = "*"
+flask-seeder = "*"
 
 [requires]
 python_version = "3.8"
