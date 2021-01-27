@@ -162,10 +162,7 @@ def add_user():
 def add_blog():
     title = request.json['title']
 
-    year  = int(request.json['date']['date'][:4])
-    month =  int(request.json['date']['date'][5:7])
-    day = int(request.json['date']['date'][8:10])
-    date = datetime(year, month,day)
+    date = processDate(request.json['date']['date'])
     image = request.json['image']
     text = request.json['text']
     
@@ -179,7 +176,7 @@ def add_blog():
 ## Delete Blog
 @app.route('/blog/<id>', methods=['DELETE'])
 def delete_blog(id):
-  res = blog.query.get(id)
+  res = Blog.query.get(id)
   db.session.delete(res)
   db.session.commit()
 
@@ -201,9 +198,21 @@ def get_blog(id):
   res = blog_schema.dump(blog)
   return jsonify(res)
 
+# Get one blog
+@app.route('/blog', methods=['PATCH'])
+def update_blog():
+  blog = Blog.query.get(request.json['id'])
+  blog.title = request.json['title']
+  date = processDate(request.json['date']['date'])
+  blog.image = request.json['image']
+  blog.text = request.json['text']
+  db.session.commit()
 
+
+  res = skill_schema.dump(blog)
+  return jsonify(res)
 ######################################
-@app.route('/projet', methods=['POST'])
+@app.route('/project', methods=['POST'])
 def add_projet():
     name = request.json['name']
     image = request.json['image']
@@ -217,8 +226,9 @@ def add_projet():
     return projet_schema.jsonify(res)
 
 ## Delete Projet
-@app.route('/projet/<id>', methods=['DELETE'])
-def delete_projet(id):
+## Delete Blog
+@app.route('/project/<id>', methods=['DELETE'])
+def delete_project(id):
   res = Projet.query.get(id)
   db.session.delete(res)
   db.session.commit()
@@ -226,14 +236,14 @@ def delete_projet(id):
   return projet_schema.jsonify(res)
 
 # Get All Projets
-@app.route('/projet', methods=['GET'])
+@app.route('/project', methods=['GET'])
 def get_projets():
   all_projets = Projet.query.all()
   result = projets_schema.dump(all_projets)
   return jsonify(result)
 
 # Get one Projet
-@app.route('/projet/<id>', methods=['GET'])
+@app.route('/project/<id>', methods=['GET'])
 def get_projet(id):
   projet = Projet.query.get(id)
   print(projet)
@@ -241,7 +251,18 @@ def get_projet(id):
   return jsonify(res)
 
 
+# Get one project
+@app.route('/project', methods=['PATCH'])
+def update_project():
+  project = Projet.query.get(request.json['id'])
+  project.name = request.json['name']
+  project.image = request.json['image']
+  project.skills = request.json['skills']
+  db.session.commit()
+  print(request.json['name'])
 
+  res = skill_schema.dump(project)
+  return jsonify(res)
 
 
 
@@ -299,20 +320,6 @@ def update_skill():
   return jsonify(res)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ######################################
 @app.route('/ressource', methods=['POST'])
 def add_ressource():
@@ -343,7 +350,11 @@ def get_ressources():
   result = ressources_schema.dump(all_ressources)
   return jsonify(result)
 
-
+def processDate(date):
+    year  = int(date[:4])
+    month =  int(date[5:7])
+    day = int(date[8:10])
+    return datetime(year, month,day)
 
 #init Schema
 
