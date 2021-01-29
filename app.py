@@ -128,8 +128,7 @@ def status():
 @app.route('/getuser', methods=['POST'])
 def get_user():
     print(request)
-    res = User.query.filter_by(
-        email=request.json['username'], password=request.json['password']).first()
+    res = User.query.filter_by(email=request.json['username'], password=request.json['password']).first()
     print(res)
     return user_schema.jsonify(res)
 
@@ -148,7 +147,7 @@ def add_user():
 
 ########## BLOG #################
 ######################################
-@app.route('/blog', methods=['POST'])
+@app.route('/Blog', methods=['POST'])
 def add_blog():
     title = request.json['title']
     date = processDate(request.json['date']['date'])
@@ -164,7 +163,7 @@ def add_blog():
 ## Delete Blog
 
 
-@app.route('/blog/<id>', methods=['DELETE'])
+@app.route('/Blog/<id>', methods=['DELETE'])
 def delete_blog(id):
   res = Blog.query.get(id)
   db.session.delete(res)
@@ -175,7 +174,7 @@ def delete_blog(id):
 # Get All Blogs
 
 
-@app.route('/blog', methods=['GET'])
+@app.route('/Blog', methods=['GET'])
 def get_blogs():
   all_blogs = Blog.query.all()
   result = blogs_schema.dump(all_blogs)
@@ -184,7 +183,7 @@ def get_blogs():
   # Get one Blog
 
 
-@app.route('/blog/<id>', methods=['GET'])
+@app.route('/Blog/<id>', methods=['GET'])
 def get_blog(id):
   blog = Blog.query.get(id)
   print(blog)
@@ -194,7 +193,7 @@ def get_blog(id):
 # Get one blog
 
 
-@app.route('/blog', methods=['PATCH'])
+@app.route('/Blog', methods=['PATCH'])
 def update_blog():
   blog = Blog.query.get(request.json['id'])
   blog.title = request.json['title']
@@ -208,7 +207,10 @@ def update_blog():
 ######################################
 
 
-@app.route('/project', methods=['POST'])
+
+## Delete project
+
+@app.route('/Project', methods=['POST'])
 def add_project():
     name = request.json['name']
     image = request.json['image']
@@ -222,7 +224,7 @@ def add_project():
 ## Delete project
 
 
-@app.route('/project/<id>', methods=['DELETE'])
+@app.route('/Project/<id>', methods=['DELETE'])
 def delete_project(id):
   res = Project.query.get(id)
   db.session.delete(res)
@@ -233,7 +235,7 @@ def delete_project(id):
 # Get All Projects
 
 
-@app.route('/project', methods=['GET'])
+@app.route('/Project', methods=['GET'])
 def get_projects():
   all_Projects = Project.query.all()
   result = Projects_schema.dump(all_Projects)
@@ -242,7 +244,7 @@ def get_projects():
 # Get one project
 
 
-@app.route('/project/<id>', methods=['GET'])
+@app.route('/Project/<id>', methods=['GET'])
 def get_project(id):
   project = Project.query.get(id)
   print(project)
@@ -251,7 +253,7 @@ def get_project(id):
 
 
 # Get one project
-@app.route('/project', methods=['PATCH'])
+@app.route('/Project', methods=['PATCH'])
 def update_project():
   project = Project.query.get(request.json['id'])
   project.name = request.json['name']
@@ -267,7 +269,7 @@ def update_project():
 ######################################
 
 ## create one skill
-@app.route('/skill', methods=['POST'])
+@app.route('/Skill', methods=['POST'])
 def add_skills():
     name = request.json['name']
     ratio = request.json['ratio']
@@ -281,7 +283,7 @@ def add_skills():
 ## Delete one skill
 
 
-@app.route('/skill/<id>', methods=['DELETE'])
+@app.route('/Skill/<id>', methods=['DELETE'])
 def delete_skill(id):
   res = Skill.query.get(id)
   db.session.delete(res)
@@ -292,7 +294,7 @@ def delete_skill(id):
 # Get All skills
 
 
-@app.route('/skill', methods=['GET'])
+@app.route('/Skill', methods=['GET'])
 def get_skills():
   all_skills = Skill.query.all()
   result = Skills_schema.dump(all_skills)
@@ -301,7 +303,7 @@ def get_skills():
 # Get one skill
 
 
-@app.route('/skill/<id>', methods=['GET'])
+@app.route('/Skill/<id>', methods=['GET'])
 def get_skill(id):
   skill = Skill.query.get(id)
   res = skill_schema.dump(skill)
@@ -310,7 +312,7 @@ def get_skill(id):
 # Get one skill
 
 
-@app.route('/skill', methods=['PATCH'])
+@app.route('/Skill', methods=['PATCH'])
 def update_skill():
   skill = Skill.query.get(request.json['id'])
   skill.name = request.json['name']
