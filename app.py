@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy,  event
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS, cross_origin
 import os
@@ -20,6 +20,20 @@ db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
 
+class Message(db.Model):
+    __tablename__ = 'message'
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.String(1000), nullable=False)
+    email = db.Column(db.String(50), nullable=False)
+    title = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(50), nullable=False)
+
+    def __init__(self, email, message, title, name):
+        self.email = email
+        self.message = message
+        self.title = title
+        self.name = name
+
 
 class Count(db.Model):
     __tablename__ = 'compteur_count'
@@ -39,6 +53,14 @@ class User(db.Model):
     def __init__(self, email, password):
         self.email = email
         self.password = password
+
+
+@event.listens_for(User.__table__, 'after_create')
+def create_departments(*args, **kwargs):
+    db.session.add(User(email='Admin', password='Moltencore1993!'))
+    db.session.commit()
+
+
 
 
 class Ressource(db.Model):
@@ -99,6 +121,9 @@ class BlogSchema(ma.Schema):
     class Meta:
         fields = ('id', 'title', 'date', 'image', 'text')
 
+class MessageSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'email', 'message', 'name', 'title')
 
 class ProjectSchema(ma.Schema):
     class Meta:
@@ -205,9 +230,42 @@ def update_blog():
 
   return jsonify(res)
 ######################################
+@app.route('/Message', methods=['GET'])
+def get_Messages():
+  all_Messages = Message.query.all()
+  result = messages_shcema.dump(all_Messages)
+  return jsonify(result)
 
 
+@app.route('/Message/<id>', methods=['GET'])
+def get_message(id):
+  message = Message.query.get(id)
+  print(message)
+  res = message_shcema.dump(message)
+  return jsonify(res)
 
+
+# Get one project
+@app.route('/Message/<id>', methods=['DELETE'])
+def delete_message(id):
+  res = Message.query.get(id)
+  db.session.delete(res)
+  db.session.commit()
+
+  return message_shcema.jsonify(res)
+
+## create one message
+@app.route('/Message', methods=['POST'])
+def add_message():
+    name = request.json['name']
+    email = request.json['email']
+    message = request.json['message']
+    title = request.json['title']
+    res = Message(name, email, message, title)
+    db.session.add(res)
+    db.session.commit()
+
+    return message_shcema.jsonify(res)
 ## Delete project
 
 @app.route('/Project', methods=['POST'])
@@ -369,6 +427,8 @@ def processDate(date):
 
 user_schema = UserSchema()
 
+message_shcema = MessageSchema()
+messages_shcema = MessageSchema(many=True)
 
 blog_schema = BlogSchema()
 blogs_schema = BlogSchema(many=True)
