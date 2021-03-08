@@ -116,7 +116,12 @@ class Project(db.Model):
         self.image = image
         self.skills = skills
 
-
+@event.listens_for(Project.__table__, 'after_create')
+def create_Projects(*args, **kwargs):
+    db.session.add(Project(name='Admin', skills='php'))
+    db.session.commit()
+    
+    
 class BlogSchema(ma.Schema):
     class Meta:
         fields = ('id', 'title', 'date', 'image', 'text')
