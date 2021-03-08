@@ -118,7 +118,7 @@ class Project(db.Model):
 
 @event.listens_for(Project.__table__, 'after_create')
 def create_Projects(*args, **kwargs):
-    db.session.add(Project(name='Admin', skills='php'))
+    db.session.add(Project(name='Admin', image="php.png", skills='php'))
     db.session.commit()
     
     
