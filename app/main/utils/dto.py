@@ -30,7 +30,7 @@ class MessageDto:
         'name': fields.String(required=True),
         'message': fields.String(required=True),
         'email': fields.String(required=True),
-        'id': fields.String(description='blog id')
+        'id': fields.String(description='project\'s id')
     })
 
 
@@ -40,7 +40,7 @@ class RessourceDto:
         'quantity': fields.String(required=True),
         'name': fields.String(required=True),
         'unity': fields.String(required=True),
-        'id': fields.String(description='blog id')
+        'id': fields.String(description='project\'s id')
     })
 
 
@@ -50,15 +50,17 @@ class SkillDto:
         'name': fields.String(required=True),
         'ratio': fields.String(required=True),
         'active': fields.Boolean(required=True),
-        'id': fields.String(description='blog id')
+        'id': fields.String(description='project\'s id')
     })
 
 
-
-
-
-
-
+class UserDto:
+    api = Namespace('user', description='user related operations')
+    user = api.model('user', {
+        'email': fields.String(required=True),
+        'password': fields.String(required=True),
+        'id': fields.String(description='project\'s id')
+    })
 
 
 

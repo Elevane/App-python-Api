@@ -6,6 +6,7 @@ from .main.controller.blog_controller import api as blog_ns
 from .main.controller.message_controller import api as message_ns
 from .main.controller.ressource_controller import api as ressource_ns
 from .main.controller.skill_controller import api as skill_ns
+from .main.controller.user_controller import api as user_ns
 
 blueprint = Blueprint('api', __name__)
 
@@ -20,3 +21,4 @@ api.add_namespace(blog_ns, path='/blog')
 api.add_namespace(message_ns, path='/message')
 api.add_namespace(ressource_ns, path='/ressource')
 api.add_namespace(skill_ns, path='/skill')
+api.add_namespace(user_ns, path='/user')

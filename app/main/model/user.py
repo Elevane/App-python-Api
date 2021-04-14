@@ -24,9 +24,3 @@ def password(self, password):
 
 def check_password(self, password):
     return flask_bcrypt.check_password_hash(self.password_hash, password)
-
-
-def create_seeds():
-    db.session.add(User(email='Admin', password='Moltencore1993!'))
-    db.session.commit()
-

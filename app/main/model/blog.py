@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 class Blog(db.Model):
-    __tablename__ = 'cv_blog'
+    __tablename__ = 'blog'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
     date = db.Column(db.Date, default=datetime.utcnow)
