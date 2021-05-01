@@ -3,7 +3,7 @@ from datetime import datetime
 
 from app.main import db
 from app.main.model.message import Message
-
+from app.main.utils.SessionManager import save_changes, delete
 
 def save_new_message(data):
     message = Message.query.filter_by(title=data['title']).first()
@@ -36,15 +36,11 @@ def get_a_message(message_id):
     return Message.query.filter_by(id=message_id).first()
 
 
-def save_changes(data):
-    db.session.add(data)
-    db.session.commit()
-
 
 def delete_message(blog_id):
     res = Message.query.get(blog_id)
-    db.session.delete(res)
-    db.session.commit()
+    if res:
+        delete(res)
 
 
 def update_message(data):

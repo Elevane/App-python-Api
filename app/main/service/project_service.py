@@ -3,7 +3,7 @@ import datetime
 
 from app.main import db
 from app.main.model.project import Project
-
+from app.main.utils.SessionManager import save_changes, delete
 
 def save_new_project(data):
     project = Project.query.filter_by(name=data['name']).first()
@@ -43,8 +43,8 @@ def save_changes(data):
 
 def delete_project(project_id):
     res = Project.query.get(project_id)
-    db.session.delete(res)
-    db.session.commit()
+    if res:
+       delete(res)
 
 
 def update_project(data):

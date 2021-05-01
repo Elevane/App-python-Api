@@ -2,7 +2,7 @@ from flask import request
 from flask_restplus import Resource
 
 from ..utils.dto import SkillDto
-from ..service.skill_service import save_new_skill, get_all_skill, get_a_skill, update_skill
+from ..service.skill_service import save_new_skill, get_all_skill, get_a_skill, update_skill, delete_skill
 
 api = SkillDto.api
 _skill = SkillDto.skill
@@ -25,7 +25,7 @@ class Skill(Resource):
     @api.response(201, 'skill successfully updated.')
     @api.doc('update a skill')
     @api.expect(_skill, validate=True)
-    def put(self):
+    def patch(self):
         data = request.json
         skill = get_a_skill(data['id'])
         if not skill:
@@ -46,4 +46,14 @@ class Skill(Resource):
             api.abort(404)
         else:
             return skill
+
+    @api.doc('delete a skill')
+    @api.marshal_with(_skill)
+    def delete(self, id):
+        skill = get_a_skill(id)
+        if not skill:
+            api.abort(404)
+        else:
+            delete_skill(skill)
+
 

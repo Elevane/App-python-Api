@@ -22,13 +22,13 @@ class BlogList(Resource):
         data = request.json
         return save_new_blog(data=data)
 
-    @api.response(201, 'Blog successfully updated.')
-    @api.doc('update a blog')
+    @api.response(201, 'blog successfully updated.')
+    @api.doc('update a skill')
     @api.expect(_blog, validate=True)
-    def put(self):
+    def patch(self):
         data = request.json
-        project = get_a_blog(data['id'])
-        if not project:
+        blog = get_a_blog(data['id'])
+        if not blog:
             api.abort(404)
         else:
             return update_blog(data)

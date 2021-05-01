@@ -3,7 +3,7 @@ from datetime import datetime
 
 from app.main import db
 from app.main.model.blog import Blog
-
+from app.main.utils.SessionManager import save_changes, delete
 
 def save_new_blog(data):
     blog = Blog.query.filter_by(title=data['title']).first()
@@ -17,13 +17,13 @@ def save_new_blog(data):
         save_changes(new_blog)
         response_object = {
             'status': 'success',
-            'message': 'Successfully created.'
+            'message': 'blog Successfully created.'
         }
         return response_object, 201
     else:
         response_object = {
             'status': 'fail',
-            'message': 'Project already exists',
+            'message': 'Blog already exists',
         }
         return response_object, 409
 
@@ -36,15 +36,10 @@ def get_a_blog(blog_id):
     return Blog.query.filter_by(id=blog_id).first()
 
 
-def save_changes(data):
-    db.session.add(data)
-    db.session.commit()
-
-
 def delete_blog(blog_id):
     res = Blog.query.get(blog_id)
-    db.session.delete(res)
-    db.session.commit()
+    if res:
+        delete(res)
 
 
 def update_blog(data):

@@ -3,6 +3,7 @@ from datetime import datetime
 
 from app.main import db
 from app.main.model.ressource import Ressource
+from app.main.utils.SessionManager import save_changes, delete
 
 
 def save_new_ressource(data):
@@ -35,15 +36,11 @@ def get_a_ressource(ressource_id):
     return Ressource.query.filter_by(id=ressource_id).first()
 
 
-def save_changes(data):
-    db.session.add(data)
-    db.session.commit()
-
 
 def delete_ressource(ressource_id):
     res = Ressource.query.get(ressource_id)
-    db.session.delete(res)
-    db.session.commit()
+    if res:
+        delete(rees)
 
 
 def update_ressource(data):
