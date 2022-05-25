@@ -24,7 +24,7 @@ mysqlclient==2.0.3
 pycparser==2.20
 pygame==2.0.1
 pyglet==1.5.15
-PyJWT==2.0.1
+PyJWT==2.4.0
 pyrsistent==0.17.3
 python-dateutil==2.8.1
 python-editor==1.0.4
